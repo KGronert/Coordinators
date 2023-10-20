@@ -2,7 +2,11 @@ name: Slack Notification
 
 on:
   pull_request:
-    types: [opened, closed, reopened]
+    types: [opened, closed, reopened, synchronize, review_requested, review_request_removed]
+    
+  pull_request_review:
+    types:
+      - submitted
 
 jobs:
   notify_slack:
@@ -42,4 +46,22 @@ jobs:
         run: |
           curl -X POST -H 'Content-type: application/json' --data '{
             "text": "${{ github.actor }} reopened pull request <${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}> in ${{ github.repository }}",
+          }' $SLACK_WEBHOOK_URL
+
+      - name: Pull request is approved
+        if: github.event_name == 'pull_request_review' && github.event.review.state == 'approved'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data '{
+            "text": "${{ github.actor }} approved pull request <${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}> in ${{ github.repository }}",
+          }' $SLACK_WEBHOOK_URL
+
+      - name: Pull request is unapproved
+        if: github.event_name == 'pull_request_review' && github.event.review.state == 'changes_requested'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data '{
+            "text": "${{ github.actor }} unapproved pull request <${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}> in ${{ github.repository }}",
           }' $SLACK_WEBHOOK_URL
