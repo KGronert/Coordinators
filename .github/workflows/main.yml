@@ -29,7 +29,5 @@ jobs:
             message="\
 ${{ github.actor }} ${action_message} <${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}> in ${{ github.repository }}"
 
-            curl -X POST -H 'Content-type: application/json' --data "{
-              \"text\": \"${message}\"
-            }" $SLACK_WEBHOOK_URL
+            curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"${message}\"}" $SLACK_WEBHOOK_URL
           fi
