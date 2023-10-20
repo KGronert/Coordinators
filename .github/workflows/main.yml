@@ -12,6 +12,24 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          curl -X POST -H 'Content-type: application/json' --data '{
-            "text": "${{ github.actor }} ${{ github.event_name == 'pull_request' && github.event.action == 'opened' && 'opened pull request' || github.event_name == 'pull_request' && github.event.action == 'closed' && 'closed pull request' || github.event_name == 'pull_request' && github.event.action == 'synchronize' && 'synchronized pull request' || github.event_name == 'pull_request' && github.event.action == 'reopened' && 'reopened pull request' || 'unknown action on pull request' }} <${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}> in ${{ github.repository }}",
-          }' $SLACK_WEBHOOK_URL
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            case "${{ github.event.action }}" in
+              opened)
+                action_message="opened pull request";;
+              closed)
+                action_message="closed pull request";;
+              synchronize)
+                action_message="synchronized pull request";;
+              reopened)
+                action_message="reopened pull request";;
+              *)
+                action_message="unknown action on pull request";;
+            esac
+
+            message="\
+${{ github.actor }} ${action_message} <${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}> in ${{ github.repository }}"
+
+            curl -X POST -H 'Content-type: application/json' --data "{
+              \"text\": \"${message}\"
+            }" $SLACK_WEBHOOK_URL
+          fi
