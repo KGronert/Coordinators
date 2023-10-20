@@ -1,0 +1,17 @@
+name: Slack Notification
+
+on:
+  pull_request:
+    types: [opened, closed, reopened]
+
+jobs:
+  notify_slack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Slack notification
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data '{
+            "text": "${{ github.actor }} ${{ github.event_name == 'pull_request' && github.event.action == 'opened' && 'opened pull request' || github.event_name == 'pull_request' && github.event.action == 'closed' && 'closed pull request' || github.event_name == 'pull_request' && github.event.action == 'synchronize' && 'synchronized pull request' || github.event_name == 'pull_request' && github.event.action == 'reopened' && 'reopened pull request' || 'unknown action on pull request' }} <${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}> in ${{ github.repository }}",
+          }' $SLACK_WEBHOOK_URL
