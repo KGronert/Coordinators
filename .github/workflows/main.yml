@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Pull request is merged
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         if: github.event.pull_request.merged == true
         run: |
           curl -X POST -H 'Content-type: application/json' --data '{
@@ -16,6 +18,8 @@ jobs:
           }' $SLACK_WEBHOOK_URL
 
       - name: Pull request is opened
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         if: github.event_name == 'pull_request' && github.event.action == 'opened'
         run: |
           curl -X POST -H 'Content-type: application/json' --data '{
@@ -23,6 +27,8 @@ jobs:
           }' $SLACK_WEBHOOK_URL
 
       - name: Pull request is closed
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         if: github.event_name == 'pull_request' && github.event.action == 'closed'
         run: |
           curl -X POST -H 'Content-type: application/json' --data '{
@@ -30,6 +36,8 @@ jobs:
           }' $SLACK_WEBHOOK_URL
 
       - name: Pull request is reopened
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         if: github.event_name == 'pull_request' && github.event.action == 'reopened'
         run: |
           curl -X POST -H 'Content-type: application/json' --data '{
