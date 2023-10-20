@@ -8,10 +8,38 @@ jobs:
   notify_slack:
     runs-on: ubuntu-latest
     steps:
-      - name: Send Slack notification
+      - name: Pull request is merged
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: github.event.pull_request.merged == true
         run: |
           curl -X POST -H 'Content-type: application/json' --data '{
-            "text": "${{ github.actor }} ${{ github.event_name == 'pull_request' && github.event.action == 'opened' && 'opened pull request' || github.event_name == 'pull_request' && github.event.action == 'closed' && 'closed pull request' || github.event_name == 'pull_request' && github.event.action == 'synchronize' && 'synchronized pull request' || github.event_name == 'pull_request' && github.event.action == 'reopened' && 'reopened pull request' || 'unknown action on pull request' }} <${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}> in ${{ github.repository }}",
+            "text": "${{ github.actor }} merged pull request <${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}> in ${{ github.repository }}",
+          }' $SLACK_WEBHOOK_URL
+
+      - name: Pull request is opened
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: github.event_name == 'pull_request' && github.event.action == 'opened'
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data '{
+            "text": "${{ github.actor }} opened pull request <${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}> in ${{ github.repository }}",
+          }' $SLACK_WEBHOOK_URL
+
+      - name: Pull request is closed
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: github.event_name == 'pull_request' && github.event.action == 'closed'
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data '{
+            "text": "${{ github.actor }} closed pull request <${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}> in ${{ github.repository }}",
+          }' $SLACK_WEBHOOK_URL
+
+      - name: Pull request is reopened
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: github.event_name == 'pull_request' && github.event.action == 'reopened'
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data '{
+            "text": "${{ github.actor }} reopened pull request <${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}> in ${{ github.repository }}",
           }' $SLACK_WEBHOOK_URL
